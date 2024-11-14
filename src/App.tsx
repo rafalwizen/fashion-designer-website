@@ -1,35 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-function App() {
-  const [count, setCount] = useState(0)
+import Home from './components/Home';
+import About from './components/About';
+import Portfolio from './components/Portfolio';
+import Contact from './components/Contact';
+import Login from './components/Login';
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App: React.FC = () => {
+    const { t, i18n } = useTranslation();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
-export default App
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
+
+    return (
+        <Router>
+            <div className="bg-light-lavender min-h-screen">
+                <nav className="bg-dark-navy text-white p-4">
+                    <div className="container mx-auto flex justify-between items-center">
+                        <div className="flex space-x-4">
+                            <Link to="/" className="hover:text-powder-pink">{t('home')}</Link>
+                            <Link to="/about" className="hover:text-powder-pink">{t('about')}</Link>
+                            <Link to="/portfolio" className="hover:text-powder-pink">{t('portfolio')}</Link>
+                            <Link to="/contact" className="hover:text-powder-pink">{t('contact')}</Link>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={() => changeLanguage('pl')}
+                                className="bg-powder-pink text-dark-navy px-2 py-1 rounded"
+                            >
+                                PL
+                            </button>
+                            <button
+                                onClick={() => changeLanguage('en')}
+                                className="bg-powder-pink text-dark-navy px-2 py-1 rounded"
+                            >
+                                EN
+                            </button>
+                            {!isLoggedIn ? (
+                                <Link to="/login" className="hover:text-powder-pink">{t('login')}</Link>
+                            ) : (
+                                <button onClick={() => setIsLoggedIn(false)} className="hover:text-powder-pink">
+                                    {t('logout')}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+
+                <div className="container mx-auto mt-8">
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/portfolio" element={<Portfolio isAdmin={isAdmin} />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />} />
+                    </Routes>
+                </div>
+
+                <footer className="bg-dark-navy text-white p-4 mt-8">
+                    <div className="container mx-auto flex justify-between items-center">
+                        <p>&copy; 2023 {t('footerText')}</p>
+                        <div className="flex space-x-4">
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-powder-pink">Facebook</a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-powder-pink">Instagram</a>
+                            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-powder-pink">YouTube</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </Router>
+    );
+};
+
+export default App;
