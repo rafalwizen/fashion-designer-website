@@ -11,18 +11,39 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn, setIsAdmin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Tutaj dodaj logikę logowania/rejestracji
-        console.log('Form submitted:', { username, password, isRegistering });
-        // Przykładowa logika:
-        if (username === 'admin' && password === 'admin') {
-            setIsLoggedIn(true);
-            setIsAdmin(true);
-        } else {
-            setIsLoggedIn(true);
-            setIsAdmin(false);
+        setError('');
+
+        const url = isRegistering ? 'http://localhost:5000/register' : 'http://localhost:5000/login';
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (!isRegistering) {
+                    localStorage.setItem('token', data.token);
+                    setIsLoggedIn(true);
+                    setIsAdmin(data.isAdmin);
+                } else {
+                    setIsRegistering(false);
+                }
+            } else {
+                setError(data.message || 'An error occurred');
+            }
+        } catch (error) {
+            setError('An error occurred. Please try again.');
+            console.log(error)
         }
     };
 
@@ -31,6 +52,7 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn, setIsAdmin }) => {
             <h2 className="text-3xl font-bold text-dark-navy mb-4">
                 {isRegistering ? t('register') : t('login')}
             </h2>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label htmlFor="username" className="block text-dark-navy mb-1">{t('username')}</label>
