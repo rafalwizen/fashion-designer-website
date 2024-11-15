@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Modal from './Modal';
 
 interface Project {
     id: number;
     name: string;
     description: string;
-    images: string[];
+    imageIds: number[];
 }
 
 interface PortfolioProps {
@@ -14,29 +15,34 @@ interface PortfolioProps {
 
 const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
     const { t } = useTranslation();
-    const [projects] = useState<Project[]>([
-        {
-            id: 1,
-            name: 'Eco-friendly Summer Dress',
-            description: 'A lightweight dress made from recycled materials, perfect for hot summer days.',
-            images: ['images/test-photo-1.jpg', 'images/test-photo-2.jpg', 'images/test-photo-4.jpg'],
-        },
-        {
-            id: 2,
-            name: 'Upcycled Denim Jacket',
-            description: 'A unique jacket created from old jeans, showcasing sustainable fashion at its best.',
-            images: ['images/test-photo-4.jpg', 'images/test-photo-1.jpg'],
-        },
-    ]);
-
+    const [projects, setProjects] = useState<Project[]>([]);
     const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const fetchProjects = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/projects');
+            if (response.ok) {
+                const data = await response.json();
+                setProjects(data);
+            } else {
+                console.error('Failed to fetch projects');
+            }
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+        }
+    };
 
     const nextImage = (projectId: number) => {
         setCurrentImageIndex(prev => {
             const project = projects.find(p => p.id === projectId);
             if (!project) return prev;
             const currentIndex = prev[projectId] || 0;
-            const nextIndex = (currentIndex + 1) % project.images.length;
+            const nextIndex = (currentIndex + 1) % project.imageIds.length;
             return { ...prev, [projectId]: nextIndex };
         });
     };
@@ -46,21 +52,56 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
             const project = projects.find(p => p.id === projectId);
             if (!project) return prev;
             const currentIndex = prev[projectId] || 0;
-            const prevIndex = (currentIndex - 1 + project.images.length) % project.images.length;
+            const prevIndex = (currentIndex - 1 + project.imageIds.length) % project.imageIds.length;
             return { ...prev, [projectId]: prevIndex };
         });
     };
 
+    const handleAddProject = async (name: string, description: string, images: File[]) => {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', description);
+        images.forEach(image => formData.append('images', image));
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/projects', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                fetchProjects(); // Refresh the projects list
+                setIsModalOpen(false);
+            } else {
+                console.error('Failed to add project');
+            }
+        } catch (error) {
+            console.error('Error adding project:', error);
+        }
+    };
+
     return (
-        <div>
+        <div className="relative">
             <h2 className="text-3xl font-bold text-dark-navy mb-8">{t('portfolio')}</h2>
+            {isAdmin && (
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="absolute top-0 right-0 bg-powder-pink text-dark-navy px-4 py-2 rounded"
+                >
+                    {t('addProject')}
+                </button>
+            )}
             {projects.map(project => (
                 <div key={project.id} className="bg-white p-8 rounded-lg shadow-md mb-8">
                     <h3 className="text-2xl font-bold text-dark-navy mb-4">{project.name}</h3>
                     <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/2 relative">
                             <img
-                                src={project.images[currentImageIndex[project.id] || 0]}
+                                src={`http://localhost:5000/images/${project.imageIds[currentImageIndex[project.id] || 0]}`}
                                 alt={project.name}
                                 className="w-full h-64 object-cover rounded"
                             />
@@ -83,10 +124,8 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
                     </div>
                 </div>
             ))}
-            {isAdmin && (
-                <button className="bg-powder-pink text-dark-navy px-4 py-2 rounded mt-4">
-                    {t('addProject')}
-                </button>
+            {isModalOpen && (
+                <Modal onClose={() => setIsModalOpen(false)} onSubmit={handleAddProject} />
             )}
         </div>
     );
