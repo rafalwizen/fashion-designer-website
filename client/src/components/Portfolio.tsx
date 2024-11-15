@@ -19,30 +19,36 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
             id: 1,
             name: 'Eco-friendly Summer Dress',
             description: 'A lightweight dress made from recycled materials, perfect for hot summer days.',
-            images: ['/path-to-image1.jpg', '/path-to-image2.jpg', '/path-to-image3.jpg'],
+            images: ['images/test-photo-1.jpg', 'images/test-photo-2.jpg', 'images/test-photo-4.jpg'],
         },
         {
             id: 2,
             name: 'Upcycled Denim Jacket',
             description: 'A unique jacket created from old jeans, showcasing sustainable fashion at its best.',
-            images: ['/path-to-image4.jpg', '/path-to-image5.jpg', '/path-to-image6.jpg'],
+            images: ['images/test-photo-4.jpg', 'images/test-photo-1.jpg'],
         },
     ]);
 
     const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
 
     const nextImage = (projectId: number) => {
-        setCurrentImageIndex(prev => ({
-            ...prev,
-            [projectId]: (prev[projectId] + 1) % projects.find(p => p.id === projectId)!.images.length,
-        }));
+        setCurrentImageIndex(prev => {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return prev;
+            const currentIndex = prev[projectId] || 0;
+            const nextIndex = (currentIndex + 1) % project.images.length;
+            return { ...prev, [projectId]: nextIndex };
+        });
     };
 
     const prevImage = (projectId: number) => {
-        setCurrentImageIndex(prev => ({
-            ...prev,
-            [projectId]: (prev[projectId] - 1 + projects.find(p => p.id === projectId)!.images.length) % projects.find(p => p.id === projectId)!.images.length,
-        }));
+        setCurrentImageIndex(prev => {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return prev;
+            const currentIndex = prev[projectId] || 0;
+            const prevIndex = (currentIndex - 1 + project.images.length) % project.images.length;
+            return { ...prev, [projectId]: prevIndex };
+        });
     };
 
     return (
