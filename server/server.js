@@ -39,11 +39,11 @@ const authenticateToken = (req, res, next) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { username, password, isAdmin } = req.body;
+        const { username, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const [result] = await pool.execute(
             'INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)',
-            [username, hashedPassword, true]
+            [username, hashedPassword, false]
         );
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {

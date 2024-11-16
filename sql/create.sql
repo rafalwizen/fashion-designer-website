@@ -10,6 +10,11 @@ CREATE TABLE users
     is_admin BOOLEAN DEFAULT FALSE
 );
 
+-- Insert admin user with hashed password
+-- Note: The hashed password below is for 'admin1' using bcrypt with 10 rounds
+INSERT INTO users (username, password, is_admin)
+VALUES ('Admin', '$2b$10$rXbDX3ZXK5.7D8fH5z9zKOtZtZXB5Oa6Tn.zqDzGhqp6j3f8fcnHe', TRUE);
+
 CREATE TABLE projects
 (
     id          INT AUTO_INCREMENT PRIMARY KEY,
