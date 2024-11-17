@@ -15,6 +15,17 @@ CREATE TABLE users
 INSERT INTO users (username, password, is_admin)
 VALUES ('Admin', '$2b$10$rXbDX3ZXK5.7D8fH5z9zKOtZtZXB5Oa6Tn.zqDzGhqp6j3f8fcnHe', TRUE);
 
+CREATE TABLE user_details
+(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    address VARCHAR(255),
+    phone VARCHAR(20),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE projects
 (
     id          INT AUTO_INCREMENT PRIMARY KEY,

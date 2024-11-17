@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginProps {
     setIsLoggedIn: (value: boolean) => void;
@@ -8,6 +9,7 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ setIsLoggedIn, setIsAdmin }) => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
@@ -35,6 +37,13 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn, setIsAdmin }) => {
                     localStorage.setItem('token', data.token);
                     setIsLoggedIn(true);
                     setIsAdmin(data.isAdmin);
+
+                    // Redirect based on admin status
+                    if (data.isAdmin) {
+                        navigate('/admin-panel');
+                    } else {
+                        navigate('/user-panel');
+                    }
                 } else {
                     setIsRegistering(false);
                 }
@@ -43,7 +52,6 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn, setIsAdmin }) => {
             }
         } catch (error) {
             setError('An error occurred. Please try again.');
-            console.log(error)
         }
     };
 

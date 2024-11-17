@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Home from './components/Home';
@@ -7,6 +7,8 @@ import About from './components/About';
 import Portfolio from './components/Portfolio';
 import Contact from './components/Contact';
 import Login from './components/Login';
+import UserPanel from './components/UserPanel';
+import AdminPanel from './components/AdminPanel';
 
 const App: React.FC = () => {
     const { t, i18n } = useTranslation();
@@ -27,6 +29,12 @@ const App: React.FC = () => {
                             <Link to="/about" className="hover:text-powder-pink">{t('about')}</Link>
                             <Link to="/portfolio" className="hover:text-powder-pink">{t('portfolio')}</Link>
                             <Link to="/contact" className="hover:text-powder-pink">{t('contact')}</Link>
+                            {isLoggedIn && !isAdmin ? (
+                                <Link to="/user-panel" className="hover:text-powder-pink">{t('userPanel')}</Link>
+                            ) : null}
+                            {isLoggedIn && isAdmin ? (
+                                <Link to="/admin-panel" className="hover:text-powder-pink">{t('adminPanel')}</Link>
+                            ) : null}
                         </div>
                         <div className="flex items-center space-x-4">
                             <button
@@ -58,7 +66,35 @@ const App: React.FC = () => {
                         <Route path="/about" element={<About />} />
                         <Route path="/portfolio" element={<Portfolio isAdmin={isAdmin} />} />
                         <Route path="/contact" element={<Contact />} />
-                        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} setIsAdmin={setIsAdmin} />} />
+                        <Route
+                            path="/login"
+                            element={
+                                <Login
+                                    setIsLoggedIn={setIsLoggedIn}
+                                    setIsAdmin={setIsAdmin}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/user-panel"
+                            element={
+                                isLoggedIn && !isAdmin ? (
+                                    <UserPanel />
+                                ) : (
+                                    <Navigate to="/login" replace />
+                                )
+                            }
+                        />
+                        <Route
+                            path="/admin-panel"
+                            element={
+                                isLoggedIn && isAdmin ? (
+                                    <AdminPanel />
+                                ) : (
+                                    <Navigate to="/login" replace />
+                                )
+                            }
+                        />
                     </Routes>
                 </div>
 
