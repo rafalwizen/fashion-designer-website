@@ -84,6 +84,28 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
         }
     };
 
+    const handleDeleteProject = async (projectId: number) => {
+        if (window.confirm(t('confirmDeleteProject'))) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:5000/projects/${projectId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    fetchProjects(); // Refresh the projects list
+                } else {
+                    console.error('Failed to delete project');
+                }
+            } catch (error) {
+                console.error('Error deleting project:', error);
+            }
+        }
+    };
+
     return (
         <div className="relative">
             <h2 className="text-3xl font-bold text-dark-navy mb-8">{t('portfolio')}</h2>
@@ -96,7 +118,15 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
                 </button>
             )}
             {projects.map(project => (
-                <div key={project.id} className="bg-white p-8 rounded-lg shadow-md mb-8">
+                <div key={project.id} className="bg-white p-8 rounded-lg shadow-md mb-8 relative">
+                    {isAdmin && (
+                        <button
+                            onClick={() => handleDeleteProject(project.id)}
+                            className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm"
+                        >
+                            {t('deleteProject')}
+                        </button>
+                    )}
                     <h3 className="text-2xl font-bold text-dark-navy mb-4">{project.name}</h3>
                     <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/2 relative">

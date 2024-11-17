@@ -120,7 +120,6 @@ app.get('/user-count', authenticateToken, async (req, res) => {
     }
 });
 
-// Endpoint to fetch projects
 app.get('/projects', async (req, res) => {
     try {
         const [projects] = await pool.execute('SELECT * FROM projects');
@@ -134,7 +133,6 @@ app.get('/projects', async (req, res) => {
     }
 });
 
-// Endpoint to fetch a specific image
 app.get('/images/:id', async (req, res) => {
     try {
         const [images] = await pool.execute('SELECT image FROM project_images WHERE id = ?', [req.params.id]);
@@ -149,7 +147,6 @@ app.get('/images/:id', async (req, res) => {
     }
 });
 
-// Endpoint to add a new project (admin only)
 app.post('/projects', authenticateToken, upload.array('images', 5), async (req, res) => {
     if (!req.user.isAdmin) return res.sendStatus(403);
     try {
@@ -170,6 +167,24 @@ app.post('/projects', authenticateToken, upload.array('images', 5), async (req, 
         res.status(201).json({ message: 'Project added successfully', projectId });
     } catch (error) {
         res.status(500).json({ message: 'Error adding project' });
+    }
+});
+
+app.delete('/projects/:id', authenticateToken, async (req, res) => {
+    if (!req.user.isAdmin) return res.sendStatus(403);
+    try {
+        const projectId = req.params.id;
+        await pool.execute('DELETE FROM project_images WHERE project_id = ?', [projectId]);
+        const [result] = await pool.execute('DELETE FROM projects WHERE id = ?', [projectId]);
+
+        if (result.affectedRows > 0) {
+            res.json({ message: 'Project deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Project not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        res.status(500).json({ message: 'Error deleting project' });
     }
 });
 
