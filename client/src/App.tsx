@@ -21,7 +21,7 @@ const App: React.FC = () => {
 
     return (
         <Router>
-            <div className="bg-light-lavender min-h-screen">
+            <div className="bg-light-lavender min-h-screen flex flex-col">
                 <nav className="bg-dark-navy text-white p-4">
                     <div className="container mx-auto flex justify-between items-center">
                         <div className="flex space-x-4">
@@ -60,7 +60,7 @@ const App: React.FC = () => {
                     </div>
                 </nav>
 
-                <div className="container mx-auto mt-8">
+                <div className="container mx-auto mt-8 flex-grow">
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/about" element={<About />} />
