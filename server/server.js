@@ -178,6 +178,51 @@ app.post('/projects', authenticateToken, upload.array('images'), async (req, res
     }
 });
 
+app.put('/projects/:id', authenticateToken, upload.array('newImages'), async (req, res) => {
+    if (!req.user.isAdmin) return res.sendStatus(403);
+
+    const { id } = req.params;
+    const { name, description, price, deletedImageIds } = req.body;
+    const newImages = req.files;
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        await conn.execute(
+            'UPDATE projects SET name = ?, description = ?, price = ? WHERE id = ?',
+            [name, description, parseFloat(price), id]
+        );
+
+        if (deletedImageIds && deletedImageIds.length > 0) {
+            const deletedIds = JSON.parse(deletedImageIds);
+            if (deletedIds.length > 0) {
+                const placeholders = deletedIds.map(() => '?').join(',');
+                await conn.execute(
+                    `DELETE FROM project_images WHERE id IN (${placeholders})`,
+                    deletedIds
+                );
+            }
+        }
+
+        if (newImages && newImages.length > 0) {
+            const insertImageQuery = 'INSERT INTO project_images (project_id, image) VALUES (?, ?)';
+            for (const image of newImages) {
+                await conn.execute(insertImageQuery, [id, image.buffer]);
+            }
+        }
+
+        await conn.commit();
+        res.json({ message: 'Project updated successfully' });
+    } catch (error) {
+        await conn.rollback();
+        console.error('Error updating project:', error);
+        res.status(500).json({ message: 'Error updating project' });
+    } finally {
+        conn.release();
+    }
+});
+
 app.delete('/projects/:id', authenticateToken, async (req, res) => {
     if (!req.user.isAdmin) return res.sendStatus(403);
     try {

@@ -33,6 +33,13 @@ i18n
                     projectDescription: 'Description',
                     projectPrice: 'Price',
                     projectImages: 'Images',
+                    editProject: 'Edit Project',
+                    save: 'Save',
+                    currentImages: 'Current Images',
+                    addNewImages: 'Add New Images',
+                    markedForDeletion: 'Marked for deletion',
+                    imagePreviews: 'Image Previews',
+                    newImagePreviews: 'New Image Previews',
 
                     // Contact form
                     name: 'Name',
@@ -101,6 +108,13 @@ i18n
                     projectDescription: 'Opis',
                     projectPrice: 'Cena',
                     projectImages: 'Zdjęcia',
+                    editProject: 'Edytuj Projekt',
+                    save: 'Zapisz',
+                    currentImages: 'Obecne Zdjęcia',
+                    addNewImages: 'Dodaj Nowe Zdjęcia',
+                    markedForDeletion: 'Zaznaczone do usunięcia',
+                    imagePreviews: 'Podgląd Zdjęć',
+                    newImagePreviews: 'Podgląd Nowych Zdjęć',
 
                     // Contact form
                     name: 'Imię',

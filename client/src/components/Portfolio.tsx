@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
+import EditModal from './EditModal';
 import { useCart } from '../contexts/CartContext';
 
 interface Project {
@@ -20,6 +21,8 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
     const { addToCart } = useCart();
 
     useEffect(() => {
@@ -88,6 +91,30 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
         }
     };
 
+    const handleEditProject = async (formData: FormData) => {
+        if (!editingProject) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/projects/${editingProject.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                fetchProjects();
+                setIsEditModalOpen(false);
+            } else {
+                console.error('Failed to edit project');
+            }
+        } catch (error) {
+            console.error('Error editing project:', error);
+        }
+    };
+
     const handleDeleteProject = async (projectId: number) => {
         if (window.confirm(t('confirmDeleteProject'))) {
             try {
@@ -132,12 +159,23 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
             {projects.map(project => (
                 <div key={project.id} className="bg-white p-8 rounded-lg shadow-md mb-8 relative">
                     {isAdmin && (
-                        <button
-                            onClick={() => handleDeleteProject(project.id)}
-                            className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm"
-                        >
-                            {t('deleteProject')}
-                        </button>
+                        <div className="absolute top-2 right-2 flex space-x-2">
+                            <button
+                                onClick={() => {
+                                    setEditingProject(project);
+                                    setIsEditModalOpen(true);
+                                }}
+                                className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                            >
+                                {t('editProject')}
+                            </button>
+                            <button
+                                onClick={() => handleDeleteProject(project.id)}
+                                className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                            >
+                                {t('deleteProject')}
+                            </button>
+                        </div>
                     )}
                     <h3 className="text-2xl font-bold text-dark-navy mb-4">{project.name}</h3>
                     <div className="flex flex-col md:flex-row">
@@ -175,6 +213,13 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
             ))}
             {isModalOpen && (
                 <Modal onClose={() => setIsModalOpen(false)} onSubmit={handleAddProject} />
+            )}
+            {isEditModalOpen && editingProject && (
+                <EditModal
+                    project={editingProject}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSubmit={handleEditProject}
+                />
             )}
         </div>
     );
