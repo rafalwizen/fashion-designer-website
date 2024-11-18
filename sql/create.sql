@@ -31,7 +31,8 @@ CREATE TABLE projects
     id          INT AUTO_INCREMENT PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     description TEXT,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    price       DECIMAL(10, 2) NOT NULL DEFAULT 0.00;
 );
 
 CREATE TABLE project_images

@@ -122,13 +122,17 @@ app.get('/user-count', authenticateToken, async (req, res) => {
 
 app.get('/projects', async (req, res) => {
     try {
-        const [projects] = await pool.execute('SELECT * FROM projects');
+        const [projects] = await pool.execute('SELECT id, name, description, price FROM projects');
         const projectsWithImages = await Promise.all(projects.map(async (project) => {
             const [images] = await pool.execute('SELECT id FROM project_images WHERE project_id = ?', [project.id]);
-            return { ...project, imageIds: images.map(img => img.id) };
+            return {
+                ...project,
+                imageIds: images.map(img => img.id)
+            };
         }));
         res.json(projectsWithImages);
     } catch (error) {
+        console.error('Error fetching projects:', error);
         res.status(500).json({ message: 'Error fetching projects' });
     }
 });
@@ -147,13 +151,16 @@ app.get('/images/:id', async (req, res) => {
     }
 });
 
-app.post('/projects', authenticateToken, upload.array('images', 5), async (req, res) => {
+app.post('/projects', authenticateToken, upload.array('images'), async (req, res) => {
     if (!req.user.isAdmin) return res.sendStatus(403);
+
+    const { name, description, price } = req.body;
+    const images = req.files;
+
     try {
-        const { name, description } = req.body;
         const [result] = await pool.execute(
-            'INSERT INTO projects (name, description) VALUES (?, ?)',
-            [name, description]
+            'INSERT INTO projects (name, description, price) VALUES (?, ?, ?)',
+            [name, description, parseFloat(price)]
         );
         const projectId = result.insertId;
 
@@ -164,9 +171,10 @@ app.post('/projects', authenticateToken, upload.array('images', 5), async (req, 
             );
         }
 
-        res.status(201).json({ message: 'Project added successfully', projectId });
+        res.status(201).json({ message: 'Project created successfully', projectId });
     } catch (error) {
-        res.status(500).json({ message: 'Error adding project' });
+        console.error('Error creating project:', error);
+        res.status(500).json({ message: 'Error creating project' });
     }
 });
 

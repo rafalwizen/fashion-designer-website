@@ -29,6 +29,10 @@ i18n
 
                     // Portfolio page
                     addProject: 'Add New Project',
+                    projectName: 'Name',
+                    projectDescription: 'Description',
+                    projectPrice: 'Price',
+                    projectImages: 'Images',
 
                     // Contact form
                     name: 'Name',
@@ -93,6 +97,10 @@ i18n
 
                     // Portfolio page
                     addProject: 'Dodaj Nowy Projekt',
+                    projectName: 'Nazwa',
+                    projectDescription: 'Opis',
+                    projectPrice: 'Cena',
+                    projectImages: 'Zdjęcia',
 
                     // Contact form
                     name: 'Imię',
