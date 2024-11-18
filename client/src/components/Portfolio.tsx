@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
+import { useCart } from '../contexts/CartContext';
 
 interface Project {
     id: number;
     name: string;
     description: string;
     imageIds: number[];
+    price: number;
 }
 
 interface PortfolioProps {
@@ -18,6 +20,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { addToCart } = useCart();
 
     useEffect(() => {
         fetchProjects();
@@ -57,10 +60,11 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
         });
     };
 
-    const handleAddProject = async (name: string, description: string, images: File[]) => {
+    const handleAddProject = async (name: string, description: string, images: File[], price: number) => {
         const formData = new FormData();
         formData.append('name', name);
         formData.append('description', description);
+        formData.append('price', price.toString());
         images.forEach(image => formData.append('images', image));
 
         try {
@@ -74,7 +78,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
             });
 
             if (response.ok) {
-                fetchProjects(); // Refresh the projects list
+                fetchProjects();
                 setIsModalOpen(false);
             } else {
                 console.error('Failed to add project');
@@ -96,7 +100,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
                 });
 
                 if (response.ok) {
-                    fetchProjects(); // Refresh the projects list
+                    fetchProjects();
                 } else {
                     console.error('Failed to delete project');
                 }
@@ -104,6 +108,14 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
                 console.error('Error deleting project:', error);
             }
         }
+    };
+
+    const handleAddToCart = (project: Project) => {
+        addToCart({
+            id: project.id,
+            name: project.name,
+            price: project.price
+        });
     };
 
     return (
@@ -149,7 +161,14 @@ const Portfolio: React.FC<PortfolioProps> = ({ isAdmin }) => {
                             </button>
                         </div>
                         <div className="md:w-1/2 md:pl-8 mt-4 md:mt-0">
-                            <p className="text-lg text-dark-navy">{project.description}</p>
+                            <p className="text-lg text-dark-navy mb-4">{project.description}</p>
+                            <p className="text-xl font-bold text-dark-navy mb-4">{t('price')}: ${project.price}</p>
+                            <button
+                                onClick={() => handleAddToCart(project)}
+                                className="bg-powder-pink text-dark-navy px-4 py-2 rounded hover:bg-powder-pink-dark"
+                            >
+                                {t('addToCart')}
+                            </button>
                         </div>
                     </div>
                 </div>

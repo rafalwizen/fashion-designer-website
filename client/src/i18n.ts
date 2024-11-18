@@ -57,6 +57,16 @@ i18n
                     // Admin panel
                     adminPanel: 'Admin Panel',
                     registeredUsers: 'Registered Users',
+
+                    // Cart
+                    cart: 'Cart',
+                    cartEmpty: 'Your cart is empty',
+                    remove: 'Remove',
+                    total: 'Total',
+                    clearCart: 'Clear Cart',
+                    addToCart: 'Add to Cart',
+                    price: 'Price',
+                    openCart: 'Open Cart',
                 },
             },
             pl: {
@@ -111,6 +121,16 @@ i18n
                     // Admin panel
                     adminPanel: 'Panel Administratora',
                     registeredUsers: 'Zarejestrowani Użytkownicy',
+
+                    // Cart
+                    cart: 'Koszyk',
+                    cartEmpty: 'Twój koszyk jest pusty',
+                    remove: 'Usuń',
+                    total: 'Suma',
+                    clearCart: 'Wyczyść koszyk',
+                    addToCart: 'Dodaj do koszyka',
+                    price: 'Cena',
+                    openCart: 'Otwórz Koszyk',
                 },
             },
         },

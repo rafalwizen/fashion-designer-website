@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ShoppingCart } from 'lucide-react';
 
 import Home from './components/Home';
 import About from './components/About';
@@ -9,11 +10,33 @@ import Contact from './components/Contact';
 import Login from './components/Login';
 import UserPanel from './components/UserPanel';
 import AdminPanel from './components/AdminPanel';
+import Cart from './components/Cart';
+import { CartProvider, useCart } from './contexts/CartContext';
 
-const App: React.FC = () => {
+const CartModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-4 rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">{t('cart')}</h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                        &times;
+                    </button>
+                </div>
+                <Cart />
+            </div>
+        </div>
+    );
+};
+
+const AppContent: React.FC = () => {
     const { t, i18n } = useTranslation();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const { items } = useCart();
 
     const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
@@ -48,6 +71,18 @@ const App: React.FC = () => {
                                 className="bg-powder-pink text-dark-navy px-2 py-1 rounded"
                             >
                                 EN
+                            </button>
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="relative hover:text-powder-pink"
+                                aria-label={t('openCart')}
+                            >
+                                <ShoppingCart size={24} />
+                                {items.length > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-powder-pink text-dark-navy rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    {items.length}
+                  </span>
+                                )}
                             </button>
                             {!isLoggedIn ? (
                                 <Link to="/login" className="hover:text-powder-pink">{t('login')}</Link>
@@ -108,9 +143,17 @@ const App: React.FC = () => {
                         </div>
                     </div>
                 </footer>
+
+                {isCartOpen && <CartModal onClose={() => setIsCartOpen(false)} />}
             </div>
         </Router>
     );
 };
+
+const App: React.FC = () => (
+    <CartProvider>
+        <AppContent />
+    </CartProvider>
+);
 
 export default App;

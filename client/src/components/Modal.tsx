@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 interface ModalProps {
     onClose: () => void;
-    onSubmit: (name: string, description: string, images: File[]) => void;
+    onSubmit: (name: string, description: string, images: File[], price: number) => void;
 }
 
 const Modal: React.FC<ModalProps> = ({ onClose, onSubmit }) => {
@@ -11,10 +11,11 @@ const Modal: React.FC<ModalProps> = ({ onClose, onSubmit }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [images, setImages] = useState<File[]>([]);
+    const [price, setPrice] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(name, description, images);
+        onSubmit(name, description, images, parseFloat(price));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,6 +54,21 @@ const Modal: React.FC<ModalProps> = ({ onClose, onSubmit }) => {
                             rows={3}
                             required
                         ></textarea>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                            {t('projectPrice')}
+                        </label>
+                        <input
+                            type="number"
+                            id="price"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            required
+                            min="0"
+                            step="0.01"
+                        />
                     </div>
                     <div className="mb-4">
                         <label htmlFor="images" className="block text-sm font-medium text-gray-700">
