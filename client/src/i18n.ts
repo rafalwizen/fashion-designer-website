@@ -78,6 +78,18 @@ i18n
                     addToCart: 'Add to Cart',
                     price: 'Price',
                     openCart: 'Open Cart',
+
+                    // Payment
+                    loginToCheckout: 'Login to Checkout',
+                    proceedToCheckout: 'Proceed to Checkout',
+                    payment: 'Payment',
+                    cardNumber: 'Card Number',
+                    expiryDate: 'Expiry Date',
+                    cvv: 'CVV',
+                    totalAmount: 'Total Amount',
+                    pay: 'Pay',
+                    paymentSuccessful: 'Payment Successful!',
+                    removeFromCart: 'Remove {{name}} from cart',
                 },
             },
             pl: {
@@ -153,6 +165,18 @@ i18n
                     addToCart: 'Dodaj do koszyka',
                     price: 'Cena',
                     openCart: 'Otwórz Koszyk',
+
+                    // Payment
+                    loginToCheckout: 'Zaloguj się, aby przejść do kasy',
+                    proceedToCheckout: 'Przejdź do kasy',
+                    payment: 'Płatność',
+                    cardNumber: 'Numer karty',
+                    expiryDate: 'Data ważności',
+                    cvv: 'CVV',
+                    totalAmount: 'Suma',
+                    pay: 'Zapłać',
+                    paymentSuccessful: 'Płatność zakończona sukcesem!',
+                    removeFromCart: 'Usuń {{name}} z koszyka',
                 },
             },
         },

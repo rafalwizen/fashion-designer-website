@@ -11,10 +11,18 @@ import Login from './components/Login';
 import UserPanel from './components/UserPanel';
 import AdminPanel from './components/AdminPanel';
 import Cart from './components/Cart';
+import PaymentModal from './components/PaymentModal';
 import { CartProvider, useCart } from './contexts/CartContext';
 
-const CartModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const CartModal: React.FC<{ onClose: () => void, isLoggedIn: boolean }> = ({ onClose, isLoggedIn }) => {
     const { t } = useTranslation();
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const { items, clearCart } = useCart();
+    const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+
+    const handleCheckout = () => {
+        setIsPaymentModalOpen(true);
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -25,8 +33,30 @@ const CartModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         &times;
                     </button>
                 </div>
-                <Cart />
+                <Cart isLoggedIn={isLoggedIn} />
+                <div className="mt-4 flex justify-between">
+                    <button
+                        onClick={clearCart}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                    >
+                        {t('clearCart')}
+                    </button>
+                    {isLoggedIn && (
+                        <button
+                            onClick={handleCheckout}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                        >
+                            {t('proceedToCheckout')}
+                        </button>
+                    )}
+                </div>
             </div>
+            {isPaymentModalOpen && (
+                <PaymentModal
+                    onClose={() => setIsPaymentModalOpen(false)}
+                    totalAmount={totalPrice}
+                />
+            )}
         </div>
     );
 };
@@ -80,8 +110,8 @@ const AppContent: React.FC = () => {
                                 <ShoppingCart size={24} />
                                 {items.length > 0 && (
                                     <span className="absolute -top-2 -right-2 bg-powder-pink text-dark-navy rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                    {items.length}
-                  </span>
+                                        {items.length}
+                                    </span>
                                 )}
                             </button>
                             {!isLoggedIn ? (
@@ -144,7 +174,7 @@ const AppContent: React.FC = () => {
                     </div>
                 </footer>
 
-                {isCartOpen && <CartModal onClose={() => setIsCartOpen(false)} />}
+                {isCartOpen && <CartModal onClose={() => setIsCartOpen(false)} isLoggedIn={isLoggedIn} />}
             </div>
         </Router>
     );
