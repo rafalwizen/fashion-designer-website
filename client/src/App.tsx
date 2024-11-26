@@ -18,7 +18,7 @@ const CartModal: React.FC<{ onClose: () => void, isLoggedIn: boolean }> = ({ onC
     const { t } = useTranslation();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const { items, clearCart } = useCart();
-    const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = items.reduce((sum, item) => sum + (typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0), 0);
 
     const handleCheckout = () => {
         setIsPaymentModalOpen(true);

@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { PAYPAL_CLIENT_ID } from '../config';
 
 interface PaymentModalProps {
     onClose: () => void;
     totalAmount: number | string;
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, totalAmount }) => {
+export default function PaymentModal({ onClose, totalAmount }: PaymentModalProps) {
     const { t } = useTranslation();
-    const [cardNumber, setCardNumber] = useState('');
-    const [expiryDate, setExpiryDate] = useState('');
-    const [cvv, setCvv] = useState('');
+    const [paypalError, setPaypalError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Here I will integrate with a payment gateway
-        console.log('Processing payment:', { cardNumber, expiryDate, cvv, totalAmount });
-        // After successful payment:
+    useEffect(() => {
+        if (!PAYPAL_CLIENT_ID) {
+            setPaypalError('PayPal Client ID is not configured');
+        }
+    }, []);
+
+    const handlePaymentSuccess = (details: Record<string, unknown>) => {
+        console.log('Payment completed successfully', details);
         alert(t('paymentSuccessful'));
         onClose();
+    };
+
+    const handlePaymentError = (error: unknown) => {
+        console.error('Payment error:', error);
+        alert(t('paymentFailed'));
     };
 
     const formatAmount = (amount: number | string): string => {
@@ -26,79 +34,69 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ onClose, totalAmount }) => 
         return isNaN(numAmount) ? '0.00' : numAmount.toFixed(2);
     };
 
+    const numericTotalAmount = parseFloat(formatAmount(totalAmount));
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-8 rounded-lg max-w-md w-full">
-                <h2 className="text-2xl font-bold mb-4">{t('payment')}</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700">
-                            {t('cardNumber')}
-                        </label>
-                        <input
-                            type="text"
-                            id="cardNumber"
-                            value={cardNumber}
-                            onChange={(e) => setCardNumber(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            required
-                            pattern="\d{16}"
-                            maxLength={16}
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">{t('payment')}</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700 text-xl"
+                    >
+                        ×
+                    </button>
+                </div>
+                <p className="mb-4 font-bold">{t('totalAmount')}: ${formatAmount(totalAmount)}</p>
+
+                {paypalError ? (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <p>{t('paypalConfigError')}</p>
+                        <p className="text-sm">{paypalError}</p>
+                    </div>
+                ) : (
+                    <PayPalScriptProvider options={{
+                        clientId: PAYPAL_CLIENT_ID,
+                        currency: "USD",
+                        intent: "capture"
+                    }}>
+                        <PayPalButtons
+                            style={{ layout: "vertical" }}
+                            createOrder={(_, actions) => {
+                                return actions.order.create({
+                                    intent: "CAPTURE",
+                                    purchase_units: [
+                                        {
+                                            amount: {
+                                                value: numericTotalAmount.toString(),
+                                                currency_code: 'USD'
+                                            },
+                                        },
+                                    ],
+                                });
+                            }}
+                            onApprove={(_, actions) => {
+                                return actions.order!.capture().then((details) => {
+                                    handlePaymentSuccess(details as Record<string, unknown>);
+                                    return Promise.resolve();
+                                });
+                            }}
+                            onError={(error) => {
+                                handlePaymentError(error);
+                                return Promise.resolve();
+                            }}
                         />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
-                            {t('expiryDate')}
-                        </label>
-                        <input
-                            type="text"
-                            id="expiryDate"
-                            value={expiryDate}
-                            onChange={(e) => setExpiryDate(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            required
-                            pattern="\d{2}/\d{2}"
-                            placeholder="MM/YY"
-                            maxLength={5}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
-                            {t('cvv')}
-                        </label>
-                        <input
-                            type="text"
-                            id="cvv"
-                            value={cvv}
-                            onChange={(e) => setCvv(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            required
-                            pattern="\d{3,4}"
-                            maxLength={4}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <p className="font-bold">{t('totalAmount')}: ${formatAmount(totalAmount)}</p>
-                    </div>
-                    <div className="flex justify-end">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="mr-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            {t('cancel')}
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            {t('pay')}
-                        </button>
-                    </div>
-                </form>
+                    </PayPalScriptProvider>
+                )}
+
+                <button
+                    onClick={onClose}
+                    className="mt-4 w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    {t('cancel')}
+                </button>
             </div>
         </div>
     );
-};
-
-export default PaymentModal;
+}
